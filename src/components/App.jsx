@@ -1,80 +1,102 @@
-// import React, { Component } from 'react'
-import React, { useState } from 'react';
-
+import React, { useCallback, useEffect, useState } from 'react';
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
-import { searchPhoto } from './api/imageFinder';
+import { searchPhoto } from '../api/imageFinder';
 import Button from './Button/Button';
 import Loader from './Loader/Loader';
 import Modal from './Modal/Modal';
 import { Appdiv } from './App.styled';
 
-//state = {
-  //     isloading: false,
-  //     photos: [],
-  //     photoName: '',
-  //     page: '',
-  //     btnLoadMore: false,
-  //     showModal: false,
-  //     selectedPhoto: null,
-  //     data:''
-  //   }
 export const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [photos, setPhotos] = useState([]);
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [btnLoadMore, setBtnLoadMore] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
 
+  const fetchPhotos = useCallback(async () => {
+    setIsLoading(true);
+    searchPhoto(search, page)
+      .then(data => {
+        if (data.totalHits === 0) {
+          alert(
+            'Вибачте, немає зображень, які відповідають вашому пошуковому запиту. Будь ласка спробуйте ще раз.'
+          );
+          return;
+        }
+        const totalPage = Math.ceil(data.totalHits / 12);
+        if (totalPage > page) {
+          setBtnLoadMore(true);
+        } else {
+          alert('Вибачте, але ви досягли кінця результатів пошуку.');
+          setBtnLoadMore(false);
+        }
+        const arrPhotos = data.hits.map(
+          ({ id, webformatURL, largeImageURL, tags }) => ({
+            id,
+            webformatURL,
+            largeImageURL,
+            tags,
+          })
+        );
+        setPhotos([...arrPhotos]); //problem---------
+      })
+      .catch(error => {
+        console.log(error);
+        return alert('Щось пішло не так. Будь-ласка спробуйте пізніше.');
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [search, page]);
 
-  
+  useEffect(() => {
+    if (!search) {
+      return;
+    }
+    fetchPhotos();
+  }, [fetchPhotos, search, page]);
+
   const onSubmit = value => {
     if (value === search) {
       alert('Будь ласка, введіть новий запит!');
       return;
     }
-    setSearch(value)
-    setPage(1)
-    setPhotos([])
-    setBtnLoadMore(false)
-  }
+    if (value.trim() === '') {
+      alert('Будь ласка, введіть новий запит!');
+      return;
+    }
+    setSearch(value);
+    setPage(1);
+    setPhotos([]);
+    setBtnLoadMore(false);
+  };
   const onClickNext = () => {
-    setPage(page + 1)
+    setPage(page + 1);
   };
   const onClickOpenModal = selectedPhoto => {
-    setSelectedPhoto(selectedPhoto)
-    console.log(selectedPhoto)
-    setShowModal(true)
+    setSelectedPhoto(selectedPhoto);
+    setShowModal(true);
   };
 
   const closeModal = () => {
-    setSelectedPhoto(null)
-    console.log(selectedPhoto)
-    setShowModal(false)
+    setSelectedPhoto(null);
+    setShowModal(false);
   };
 
   return (
     <>
       <Appdiv>
-        <Searchbar 
-         onSubmit={onSubmit} 
-        />
+        <Searchbar onSubmit={onSubmit} />
         {isLoading && <Loader />}
-        <ImageGallery
-          photos={photos}
-          onClickImageItem={onClickOpenModal}
-        />
+        <ImageGallery photos={photos} onClickImageItem={onClickOpenModal} />
         {photos.length !== 0 && btnLoadMore && (
-          <Button 
-           onClickRender={onClickNext} 
-          />
+          <Button onClickRender={onClickNext} />
         )}
         {showModal && (
-          <Modal selectedPhoto={selectedPhoto} 
-           onClose={closeModal} 
-          />
+          <Modal selectedPhoto={selectedPhoto} onClose={closeModal} />
         )}
       </Appdiv>
     </>

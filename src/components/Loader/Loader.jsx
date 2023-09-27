@@ -1,20 +1,36 @@
-import React, { Component } from 'react';
+import React from 'react'
+
 import { Audio } from 'react-loader-spinner';
 
-export default class Loader extends Component {
-  render() {
-    return (
+
+const Loader = () => {
+  return (
+<Audio
       
-        <Audio
+      height="80"
+      width="80"
+      radius="9"
+      color="green"
+      ariaLabel="loading"
+    />  )
+}
+
+export default Loader
+
+// export default class Loader extends Component {
+//   render() {
+//     return (
       
-        height="80"
-        width="80"
-        radius="9"
-        color="green"
-        ariaLabel="loading"
-      />
+//         <Audio
+      
+//         height="80"
+//         width="80"
+//         radius="9"
+//         color="green"
+//         ariaLabel="loading"
+//       />
     
       
-    );
-  }
-}
+//     );
+//   }
+// }
