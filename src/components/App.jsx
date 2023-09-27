@@ -41,7 +41,7 @@ export const App = () => {
             tags,
           })
         );
-        setPhotos([...arrPhotos]); //problem---------
+        setPhotos((prevPhotos => [...prevPhotos, ...arrPhotos]));
       })
       .catch(error => {
         console.log(error);
