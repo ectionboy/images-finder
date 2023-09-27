@@ -16,7 +16,13 @@ const API_KEY = '39585428-0c09460477541b55dfc888952';
 export const searchPhoto = (searchValue, page) => {
   return fetch(
     `${BASE_URL}?q=${searchValue}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`
-  );
+  )
+  .then(response => {
+            if (!response.ok) {
+              throw new Error(response.status);
+            }
+            return response.json();
+          })
 };
 
 export default searchPhoto;
